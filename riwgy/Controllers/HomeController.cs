@@ -16,11 +16,14 @@ namespace riwgy.Controllers
 
         private readonly string _homeUrl;
 
+        private readonly string _portalUrl;
+
 
         public HomeController(RiwgyDbContext context, IConfiguration _config)
         {
             _context = context;
             _homeUrl = _config.GetValue<string>("HomeRedirect");
+            _portalUrl = _config.GetValue<string>("Portal");
         }
 
         [HttpGet]
@@ -35,7 +38,7 @@ namespace riwgy.Controllers
             string url = _context.UrlMapping.Where(r => r.Riwgy == rwigy).Select(r => r.OriginalUrl).FirstOrDefault();
             if (string.IsNullOrWhiteSpace(url))
             {
-                return NotFound();
+                return Redirect(_portalUrl);
             }
             return Redirect(url);
         }

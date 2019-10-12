@@ -8,5 +8,6 @@ namespace riwgy.Dto
     public class RiwgyLinkDto
     {
         public virtual string Url { get; set; }
+        public virtual string Riwgy { get; set; }
     }
 }

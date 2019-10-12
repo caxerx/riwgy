@@ -21,10 +21,12 @@ namespace riwgy.Controllers
     public class LinkShortenController : ControllerBase
     {
         private const string URL_REGEX = @"(https?:\/\/(?:www\.|(?!www))[a-zA-Z0-9][a-zA-Z0-9-]+[a-zA-Z0-9]\.[^\s]{2,}|www\.[a-zA-Z0-9][a-zA-Z0-9-]+[a-zA-Z0-9]\.[^\s]{2,}|https?:\/\/(?:www\.|(?!www))[a-zA-Z0-9]+\.[^\s]{2,}|www\.[a-zA-Z0-9]+\.[^\s]{2,})";
+        private const string RWIGY_REGEX = @"^[a-zA-Z0-9_-]+$";
 
         private readonly RiwgyDbContext _context;
 
         private readonly Regex _urlMatcher;
+        private readonly Regex _riwgyMatcher;
 
         private readonly string _domain;
 
@@ -33,6 +35,7 @@ namespace riwgy.Controllers
         {
             _context = context;
             _urlMatcher = new Regex(URL_REGEX, RegexOptions.Compiled | RegexOptions.IgnoreCase);
+            _riwgyMatcher = new Regex(RWIGY_REGEX, RegexOptions.Compiled | RegexOptions.IgnoreCase);
             _domain = _config.GetValue<string>("Domain");
         }
 
@@ -48,7 +51,12 @@ namespace riwgy.Controllers
                 return BadRequest("Invaild Url");
             }
 
-            string riwgy = "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz".GenerateCoupon(6);
+            string riwgy = linkDto.Riwgy;
+
+            if (string.IsNullOrWhiteSpace(riwgy) || !_riwgyMatcher.Match(riwgy).Success)
+            {
+                riwgy = "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz".GenerateCoupon(6);
+            }
 
             _context.UrlMapping.Add(new UrlMapping
             {
@@ -60,107 +68,5 @@ namespace riwgy.Controllers
 
             return Ok(new LinkCreatedResponse { ShortenedLink = _domain + riwgy });
         }
-
-
-
-        //// GET: api/UrlMappings
-        //[HttpGet]
-        //public async Task<ActionResult<IEnumerable<UrlMapping>>> GetUrlMapping()
-        //{
-        //    return await _context.UrlMapping.ToListAsync();
-        //}
-
-        //// GET: api/UrlMappings/5
-        //[HttpGet("{id}")]
-        //public async Task<ActionResult<UrlMapping>> GetUrlMapping(string id)
-        //{
-        //    var urlMapping = await _context.UrlMapping.FindAsync(id);
-
-        //    if (urlMapping == null)
-        //    {
-        //        return NotFound();
-        //    }
-
-        //    return urlMapping;
-        //}
-
-        //// PUT: api/UrlMappings/5
-        //// To protect from overposting attacks, please enable the specific properties you want to bind to, for
-        //// more details see https://aka.ms/RazorPagesCRUD.
-        //[HttpPut("{id}")]
-        //public async Task<IActionResult> PutUrlMapping(string id, UrlMapping urlMapping)
-        //{
-        //    if (id != urlMapping.Id)
-        //    {
-        //        return BadRequest();
-        //    }
-
-        //    _context.Entry(urlMapping).State = EntityState.Modified;
-
-        //    try
-        //    {
-        //        await _context.SaveChangesAsync();
-        //    }
-        //    catch (DbUpdateConcurrencyException)
-        //    {
-        //        if (!UrlMappingExists(id))
-        //        {
-        //            return NotFound();
-        //        }
-        //        else
-        //        {
-        //            throw;
-        //        }
-        //    }
-
-        //    return NoContent();
-        //}
-
-        //// POST: api/UrlMappings
-        //// To protect from overposting attacks, please enable the specific properties you want to bind to, for
-        //// more details see https://aka.ms/RazorPagesCRUD.
-        //[HttpPost]
-        //public async Task<ActionResult<UrlMapping>> PostUrlMapping(UrlMapping urlMapping)
-        //{
-        //    _context.UrlMapping.Add(urlMapping);
-        //    try
-        //    {
-        //        await _context.SaveChangesAsync();
-        //    }
-        //    catch (DbUpdateException)
-        //    {
-        //        if (UrlMappingExists(urlMapping.Id))
-        //        {
-        //            return Conflict();
-        //        }
-        //        else
-        //        {
-        //            throw;
-        //        }
-        //    }
-
-        //    return CreatedAtAction("GetUrlMapping", new { id = urlMapping.Id }, urlMapping);
-        //}
-
-        //// DELETE: api/UrlMappings/5
-        //[HttpDelete("{id}")]
-        //public async Task<ActionResult<UrlMapping>> DeleteUrlMapping(string id)
-        //{
-        //    var urlMapping = await _context.UrlMapping.FindAsync(id);
-        //    if (urlMapping == null)
-        //    {
-        //        return NotFound();
-        //    }
-
-        //    _context.UrlMapping.Remove(urlMapping);
-        //    await _context.SaveChangesAsync();
-
-        //    return urlMapping;
-        //}
-
-        //private bool UrlMappingExists(string id)
-        //{
-        //    return _context.UrlMapping.Any(e => e.Id == id);
-        //}
     }
 }
