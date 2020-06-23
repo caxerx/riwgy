@@ -20,7 +20,6 @@ namespace riwgy.Controllers
     [ApiController]
     public class LinkShortenController : ControllerBase
     {
-        private const string URL_REGEX = @"(https?:\/\/(?:www\.|(?!www))[a-zA-Z0-9][a-zA-Z0-9-]+[a-zA-Z0-9]\.[^\s]{2,}|www\.[a-zA-Z0-9][a-zA-Z0-9-]+[a-zA-Z0-9]\.[^\s]{2,}|https?:\/\/(?:www\.|(?!www))[a-zA-Z0-9]+\.[^\s]{2,}|www\.[a-zA-Z0-9]+\.[^\s]{2,})";
         private const string RWIGY_REGEX = @"^[a-zA-Z0-9_-]+$";
 
         private readonly RiwgyDbContext _context;
@@ -45,10 +44,6 @@ namespace riwgy.Controllers
             if(linkDto is null || string.IsNullOrWhiteSpace(linkDto.Url))
             {
                 return BadRequest("Url is empty");
-            }
-            if (!_urlMatcher.Match(linkDto.Url).Success)
-            {
-                return BadRequest("Invaild Url");
             }
 
             string riwgy = linkDto.Riwgy;
